@@ -1,0 +1,335 @@
+---
+title: "Getting_and_Cleaning_Data_Course_Project"
+author: "ajf"
+date: "8/19/2022"
+output: html_document
+---
+
+## Getting and Cleaning Data Course Project
+
+In this project the goal is to put together in a single and tidy dataframe a collection of multiple dataframes following the information provided by the data collection README file
+
+```{r Before kicking off}
+# Set working directory as required so it contains the folder with the data 
+setwd(".")
+# load required libraries
+library("dplyr")
+```
+
+## Data info
+==================================================================
+Human Activity Recognition Using Smartphones Dataset
+Version 1.0
+==================================================================
+Jorge L. Reyes-Ortiz, Davide Anguita, Alessandro Ghio, Luca Oneto.
+Smartlab - Non Linear Complex Systems Laboratory
+DITEN - Universit‡ degli Studi di Genova.
+Via Opera Pia 11A, I-16145, Genoa, Italy.
+activityrecognition@smartlab.ws
+www.smartlab.ws
+==================================================================
+
+The experiments have been carried out with a group of 30 volunteers within an age bracket of 19-48 years. Each person performed six activities (WALKING, WALKING_UPSTAIRS, WALKING_DOWNSTAIRS, SITTING, STANDING, LAYING) wearing a smartphone (Samsung Galaxy S II) on the waist. Using its embedded accelerometer and gyroscope, we captured 3-axial linear acceleration and 3-axial angular velocity at a constant rate of 50Hz. The experiments have been video-recorded to label the data manually. The obtained dataset has been randomly partitioned into two sets, where 70% of the volunteers was selected for generating the training data and 30% the test data. 
+
+The sensor signals (accelerometer and gyroscope) were pre-processed by applying noise filters and then sampled in fixed-width sliding windows of 2.56 sec and 50% overlap (128 readings/window). The sensor acceleration signal, which has gravitational and body motion components, was separated using a Butterworth low-pass filter into body acceleration and gravity. The gravitational force is assumed to have only low frequency components, therefore a filter with 0.3 Hz cutoff frequency was used. From each window, a vector of features was obtained by calculating variables from the time and frequency domain. See 'features_info.txt' for more details. 
+
+For each record it is provided:
+======================================
+
+- Triaxial acceleration from the accelerometer (total acceleration) and the estimated body acceleration.
+- Triaxial Angular velocity from the gyroscope. 
+- A 561-feature vector with time and frequency domain variables. 
+- Its activity label. 
+- An identifier of the subject who carried out the experiment.
+
+The dataset includes the following files:
+=========================================
+
+- 'README.txt'
+
+- 'features_info.txt': Shows information about the variables used on the feature vector.
+
+- 'features.txt': List of all features.
+
+- 'activity_labels.txt': Links the class labels with their activity name.
+
+- 'train/X_train.txt': Training set.
+
+- 'train/y_train.txt': Training labels.
+
+- 'test/X_test.txt': Test set.
+
+- 'test/y_test.txt': Test labels.
+
+The following files are available for the train and test data. Their descriptions are equivalent. 
+
+- 'train/subject_train.txt': Each row identifies the subject who performed the activity for each window sample. Its range is from 1 to 30. 
+
+- 'train/Inertial Signals/total_acc_x_train.txt': The acceleration signal from the smartphone accelerometer X axis in standard gravity units 'g'. Every row shows a 128 element vector. The same description applies for the 'total_acc_x_train.txt' and 'total_acc_z_train.txt' files for the Y and Z axis. 
+
+- 'train/Inertial Signals/body_acc_x_train.txt': The body acceleration signal obtained by subtracting the gravity from the total acceleration. 
+
+- 'train/Inertial Signals/body_gyro_x_train.txt': The angular velocity vector measured by the gyroscope for each window sample. The units are radians/second. 
+
+Notes: 
+======
+- Features are normalized and bounded within [-1,1].
+- Each feature vector is a row on the text file.
+
+For more information about this dataset contact: activityrecognition@smartlab.ws
+
+License:
+========
+Use of this dataset in publications must be acknowledged by referencing the following publication [1] 
+
+[1] Davide Anguita, Alessandro Ghio, Luca Oneto, Xavier Parra and Jorge L. Reyes-Ortiz. Human Activity Recognition on Smartphones using a Multiclass Hardware-Friendly Support Vector Machine. International Workshop of Ambient Assisted Living (IWAAL 2012). Vitoria-Gasteiz, Spain. Dec 2012
+
+This dataset is distributed AS-IS and no responsibility implied or explicit can be addressed to the authors or their institutions for its use or misuse. Any commercial use is prohibited.
+
+Jorge L. Reyes-Ortiz, Alessandro Ghio, Luca Oneto, Davide Anguita. November 2012.
+
+
+## Codes
+
+These signals were used to estimate variables of the feature vector for each pattern:  
+'-XYZ' is used to denote 3-axial signals in the X, Y and Z directions.
+
+tBodyAcc-XYZ
+tGravityAcc-XYZ
+tBodyAccJerk-XYZ
+tBodyGyro-XYZ
+tBodyGyroJerk-XYZ
+tBodyAccMag
+tGravityAccMag
+tBodyAccJerkMag
+tBodyGyroMag
+tBodyGyroJerkMag
+fBodyAcc-XYZ
+fBodyAccJerk-XYZ
+fBodyGyro-XYZ
+fBodyAccMag
+fBodyAccJerkMag
+fBodyGyroMag
+fBodyGyroJerkMag
+
+The set of variables that were estimated from these signals are: 
+
+mean(): Mean value
+std(): Standard deviation
+mad(): Median absolute deviation 
+max(): Largest value in array
+min(): Smallest value in array
+sma(): Signal magnitude area
+energy(): Energy measure. Sum of the squares divided by the number of values. 
+iqr(): Interquartile range 
+entropy(): Signal entropy
+arCoeff(): Autorregresion coefficients with Burg order equal to 4
+correlation(): correlation coefficient between two signals
+maxInds(): index of the frequency component with largest magnitude
+meanFreq(): Weighted average of the frequency components to obtain a mean frequency
+skewness(): skewness of the frequency domain signal 
+kurtosis(): kurtosis of the frequency domain signal 
+bandsEnergy(): Energy of a frequency interval within the 64 bins of the FFT of each window.
+angle(): Angle between to vectors.
+
+Additional vectors obtained by averaging the signals in a signal window sample. These are used on the angle() variable:
+
+gravityMean
+tBodyAccMean
+tBodyAccJerkMean
+tBodyGyroMean
+tBodyGyroJerkMean
+
+The complete list of variables of each feature vector is available in 'features.txt'
+
+
+## Data gathering
+
+It is necessary to read all files provided and assign names to the variables.
+Let's start with the general files.
+
+The features files contains two variables describing the variables in x_test/train files.
+However, variables are not unique. I apply function make.unique to solve this. Now, features$unique can be used as colnames vector.
+
+The activity_labels file contains the code for the activities. Colnames assign to identify the variables with the labels and activities corresponding to them.
+
+```{r General files}
+# Read features
+features <- read.table("./UCI HAR Dataset/features.txt")
+features$unique <- make.unique(as.character(features$V2),sep="_")
+# Read activity labels
+activity_labels <- read.table("./UCI HAR Dataset/activity_labels.txt")
+colnames(activity_labels) <- c("labels","activity")
+```
+
+Then, data is divided into two groups: train and test.
+Let's organize them separately first. 
+
+## Reading and assigning variable names to training data
+
+Dataframes are obtained from txt files.
+Variables are names according to content.
+x_train varibles are rename with features in a descriptive manner.
+For Internal signal data 9 files are read and variables named using the file name plus a measurement number.
+
+All this files are binded since each row correspond to the same feature vector
+
+```{r Training data}
+# Read training data
+x_train <- read.table("./UCI HAR Dataset/train/X_train.txt")
+colnames(x_train) <- features$V2
+y_train <- read.table("./UCI HAR Dataset/train/y_train.txt")
+colnames(y_train) <- c("labels")
+subject_train <- read.table("./UCI HAR Dataset/train/subject_train.txt")
+colnames(subject_train) <- c("subject")
+
+body_acc_x_train <- read.table("./UCI HAR Dataset/train/Inertial Signals/body_acc_x_train.txt")
+body_acc_y_train <- read.table("./UCI HAR Dataset/train/Inertial Signals/body_acc_y_train.txt")
+body_acc_z_train <- read.table("./UCI HAR Dataset/train/Inertial Signals/body_acc_z_train.txt")
+
+body_gyro_x_train <- read.table("./UCI HAR Dataset/train/Inertial Signals/body_gyro_x_train.txt")
+body_gyro_y_train <- read.table("./UCI HAR Dataset/train/Inertial Signals/body_gyro_y_train.txt")
+body_gyro_z_train <- read.table("./UCI HAR Dataset/train/Inertial Signals/body_gyro_z_train.txt")
+
+total_acc_x_train <- read.table("./UCI HAR Dataset/train/Inertial Signals/total_acc_x_train.txt")
+total_acc_y_train <- read.table("./UCI HAR Dataset/train/Inertial Signals/total_acc_y_train.txt")
+total_acc_z_train <- read.table("./UCI HAR Dataset/train/Inertial Signals/total_acc_z_train.txt")
+
+colnames(body_acc_x_train) <- paste("body_acc_x_",c(1:length(colnames(body_acc_x_train))),sep="")
+colnames(body_acc_y_train) <- paste("body_acc_y_",c(1:length(colnames(body_acc_y_train))),sep="")
+colnames(body_acc_z_train) <- paste("body_acc_z_",c(1:length(colnames(body_acc_z_train))),sep="")
+
+colnames(body_gyro_x_train) <- paste("body_gyro_x_",c(1:length(colnames(body_gyro_x_train))),sep="")
+colnames(body_gyro_y_train) <- paste("body_gyro_y_",c(1:length(colnames(body_gyro_y_train))),sep="")
+colnames(body_gyro_z_train) <- paste("body_gyro_z_",c(1:length(colnames(body_gyro_z_train))),sep="")
+
+colnames(total_acc_x_train) <- paste("total_acc_x_",c(1:length(colnames(total_acc_x_train))),sep="")
+colnames(total_acc_y_train) <- paste("total_acc_y_",c(1:length(colnames(total_acc_y_train))),sep="")
+colnames(total_acc_z_train) <- paste("total_acc_z_",c(1:length(colnames(total_acc_z_train))),sep="")
+
+
+train <- cbind(subject_train ,y_train, x_train, 
+               body_acc_x_train, body_acc_y_train,body_acc_z_train,
+               body_gyro_x_train, body_gyro_y_train,body_gyro_z_train,
+               total_acc_x_train, total_acc_y_train,total_acc_z_train)
+```
+
+
+## Reading and assigning variable names to testing data
+
+The same is applied to test files
+
+```{r Testing data}
+# Read test data
+# Appropriately labels the data set with descriptive variable names.
+
+x_test <- read.table("./UCI HAR Dataset/test/X_test.txt")
+colnames(x_test) <- features$V2
+y_test <- read.table("./UCI HAR Dataset/test/Y_test.txt")
+colnames(y_test) <- c("labels")
+subject_test <- read.table("./UCI HAR Dataset/test/subject_test.txt")
+colnames(subject_test) <- c("subject")
+
+body_acc_x_test <- read.table("./UCI HAR Dataset/test/Inertial Signals/body_acc_x_test.txt")
+body_acc_y_test <- read.table("./UCI HAR Dataset/test/Inertial Signals/body_acc_y_test.txt")
+body_acc_z_test <- read.table("./UCI HAR Dataset/test/Inertial Signals/body_acc_z_test.txt")
+
+body_gyro_x_test <- read.table("./UCI HAR Dataset/test/Inertial Signals/body_gyro_x_test.txt")
+body_gyro_y_test <- read.table("./UCI HAR Dataset/test/Inertial Signals/body_gyro_y_test.txt")
+body_gyro_z_test <- read.table("./UCI HAR Dataset/test/Inertial Signals/body_gyro_z_test.txt")
+
+total_acc_x_test <- read.table("./UCI HAR Dataset/test/Inertial Signals/total_acc_x_test.txt")
+total_acc_y_test <- read.table("./UCI HAR Dataset/test/Inertial Signals/total_acc_y_test.txt")
+total_acc_z_test <- read.table("./UCI HAR Dataset/test/Inertial Signals/total_acc_z_test.txt")
+
+colnames(body_acc_x_test) <- paste("body_acc_x_",c(1:length(colnames(body_acc_x_test))),sep="")
+colnames(body_acc_y_test) <- paste("body_acc_y_",c(1:length(colnames(body_acc_y_test))),sep="")
+colnames(body_acc_z_test) <- paste("body_acc_z_",c(1:length(colnames(body_acc_z_test))),sep="")
+
+colnames(body_gyro_x_test) <- paste("body_gyro_x_",c(1:length(colnames(body_gyro_x_test))),sep="")
+colnames(body_gyro_y_test) <- paste("body_gyro_y_",c(1:length(colnames(body_gyro_y_test))),sep="")
+colnames(body_gyro_z_test) <- paste("body_gyro_z_",c(1:length(colnames(body_gyro_z_test))),sep="")
+
+colnames(total_acc_x_test) <- paste("total_acc_x_",c(1:length(colnames(total_acc_x_test))),sep="")
+colnames(total_acc_y_test) <- paste("total_acc_y_",c(1:length(colnames(total_acc_y_test))),sep="")
+colnames(total_acc_z_test) <- paste("total_acc_z_",c(1:length(colnames(total_acc_z_test))),sep="")
+
+
+test <- cbind(subject_test ,y_test, x_test, 
+               body_acc_x_test, body_acc_y_test,body_acc_z_test,
+               body_gyro_x_test, body_gyro_y_test,body_gyro_z_test,
+               total_acc_x_test, total_acc_y_test,total_acc_z_test)
+```
+
+## Combining Training and Testing data
+
+Since the structure of the data is equivalent I cbind both dataframes
+To finish tidying the data I will label the activities with descriptive variables too by merging the dataframe that codes the activity labels with the one containing the measurements.
+
+```{r cbind}
+# combine test and train data
+all_data <- rbind(train,test)
+
+# Uses descriptive activity names to name the activities in the data set
+merge_activity <- merge(activity_labels, all_data, by="labels")
+````
+
+## Extracting info
+
+Here two options to get the mean and the sd for each variable.
+
+# Option 1
+Generate loop to get the mean and the sd from the columns of the datafrane with all the data.
+Store the info in two separate vectors and put them together in a new dataframe using colnames to identify the measurement in each row.
+
+```{r Option 1: mean and sd}
+# Extracts only the measurements on the mean and standard deviation for each measurement. 
+all_mean <- NULL
+all_sd <- NULL
+for(i in 3:length(colnames(all_data))){
+  all_mean[i] <- mean(all_data[,i])
+  all_sd[i] <- sd(all_data[,i])
+}
+measures <- data.frame(colnames(all_data),all_mean, all_sd)
+```
+
+# Option 2
+Turn the variables levels and subject into factors since they are not measuring anything. They are codes.
+Use the function summarise_if to get the average/sd of all numeric variables.
+
+```{r Option 2: mean and sd}
+merge_activity$subject <- as.factor(merge_activity$subject)
+merge_activity$labels <- as.factor(merge_activity$labels)
+mean_all <- merge_activity %>% summarise_if(is.numeric, mean, na.rm = TRUE)
+sd_all <- merge_activity %>% summarise_if(is.numeric, sd, na.rm = TRUE)
+```
+
+# Calculate means for groups
+Group as needed and summarise using the function of interes - here mean.
+In average_all we store means by subjects and activities.
+In average_subject, activities are not taken into account and stores the mean for each subject.
+In average_acivity, subjects are not taken into account and stores the mean for each activity.
+
+```{r Groups}
+# From the data set in step 4, creates a second, independent tidy data set 
+# with the average of each variable for each activity and each subject.
+
+merge_activity <- group_by(merge_activity, activity, subject)
+average_all <- summarize_all(merge_activity, mean)
+
+average_activity <- merge_activity %>% group_by(activity) %>% 
+  summarise_if(is.numeric, mean, na.rm = TRUE)
+
+average_subject <- merge_activity %>% group_by(subject) %>%
+  summarise_if(is.numeric, mean, na.rm = TRUE)
+````
+
+## Saving results
+The dataframe that contains all the info is saved into a file called tidy_data.csv
+
+```{r Write file}
+# generate a file with the whole set of tidy data
+write.csv(merge_activity, file="tidy_data.csv")
+aux <- read.csv("tidy_data.csv", header=TRUE)
+        
+````
