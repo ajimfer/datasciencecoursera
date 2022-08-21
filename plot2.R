@@ -1,5 +1,4 @@
 library(dplyr)
-#library(data.table) # for fread
 
 # Loading the data
 power_consumption <- read.table("household_power_consumption.txt", header=TRUE, sep=";", na.strings="?")
@@ -18,9 +17,7 @@ consumption <- rbind(consumption_01,consumption_02)
 # Remove the whole list from the environment
 rm(power_consumption)
 
-wday <- wday(consumption$Time)
-
-# Generating histogram and saving in png format
+# Generating xy plot and saving in png format
 
 # Open png device and create file
 png(file="plot2.png", width = 480, height = 480, units="px")
