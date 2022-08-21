@@ -44,7 +44,7 @@ legend("topright",col=c("black","red","blue"),lty=1,
 plot(consumption$Time,consumption$Voltage,type="l",
      ylab="Voltage", xlab="datetime")
 
-# Plot3
+# Plot4
 plot(consumption$Time,consumption$Global_reactive_power,type="l",
      ylab="Global_reactive_power", xlab="datetime")
 
