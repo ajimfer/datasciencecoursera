@@ -1,0 +1,77 @@
+---
+title: "Project Machine Learning"
+author: "ajf"
+date: '2022-10-30'
+output:
+  html_document: default
+  pdf_document: default
+---
+#*Machine Learning Project*#
+*Summary*
+Analysis of exercise monitoring variables to predict how correct movements are (class A to E). Several models are tested with different levels of data pre-processing.
+
+*Objective*
+Identify the model that better predicts the test data using the training data.
+
+##Data loading and cleaning##
+Variables with close to zero variance, with more than .95 ratio of a single outcome or with an identifier are removed from the data sets.
+
+##Preprocessing, models y predictions##
+When pre-processing is performed data is centered, scaled and principal component variable merging is applied. Else models are applied directly to data.
+The glm model can not be applied since it is for outcomes with only two classes, neither do nb models work. 
+Models are run with lda and rpart methods.
+
+```{r, echo=TRUE}
+setwd("/Users/a.jimenez/Downloads/")
+library(caret)
+test <- read.csv("pml-testing.csv", header = TRUE)
+train <- read.csv("pml-training.csv", header = TRUE)
+
+nzv <- nearZeroVar(train)
+train <- train[,-nzv]
+test <- test[,-nzv]
+
+rem.na <- sapply(train, function(x) sum(is.na(x))/nrow(train)) > .95
+train <- train[, rem.na == FALSE]
+train <- train[,-1]
+test <- test[, rem.na == FALSE]
+test <- test[,-1]
+
+# sin preprocess
+model_lda <- train(data=train, classe~.,method="lda" )
+model_lda # Accuracy 0.85
+p_lda <- predict(model_lda, test)
+
+# preprocess
+set.seed(100)
+preProc <- preProcess(train,method=c("center", "scale","pca"))
+trainPC <- predict(preProc,train)
+modelPC_lda <- train(data=trainPC, classe~.,method="lda" )
+modelPC_lda # Accuracy 0.75
+testPC <- predict(preProc,test)
+p_prePC_lda <- predict(modelPC_lda, testPC)
+# no funciona nb modelPC_nb <- train(data=trainPC, classe~.,method="nb" ) 
+# glm models only 2-class outcomes
+
+# tree
+library(rpart)
+library(rattle)
+model_rpart <- train(data=train, classe~.,method="rpart")
+model_rpart # Accuracy 0.52
+fancyRpartPlot(model_rpart$finalModel)
+p_rpart <- predict(model_rpart, test)
+
+modelPC_rpart <- train(data=trainPC, classe~.,method="rpart")
+modelPC_rpart # Accuracy 0.67
+fancyRpartPlot(modelPC_rpart$finalModel)
+pPC_rpart <- predict(modelPC_rpart, testPC)
+
+p_lda <- as.character(p_lda)
+p_prePC_lda <- as.character(p_prePC_lda)
+p_rpart <- as.character(p_rpart)
+pPC_rpart <- as.character(pPC_rpart)
+
+result <- data.frame((rbind(p_lda,p_prePC_lda,p_rpart,pPC_rpart)))
+result
+
+```
