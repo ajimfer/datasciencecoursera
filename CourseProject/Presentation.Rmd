@@ -1,0 +1,109 @@
+---
+title: "Course Project:Developing Data Products"
+author: "ajf"
+date: '2022-11-12'
+output: ioslides_presentation
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+```
+
+## Course Project
+
+This App shows an histogram with the frecuency of cars with a determined miles per galon performance using mtcars dataframe and selecting a range of cylinder numbers, horsepower and weigth of the cars.
+
+Select ranges using the sliders.
+
+Results will be shown on the right.
+
+Variables:  
+- Number of cylinders  
+- Gross horsepower  
+- Weight (1000 lbs)  
+
+Output:  
+- Miles/(US) gallon Histogram
+
+## Slide with ui.R code
+
+```{r, echo = TRUE, eval=FALSE}
+library(shiny)
+
+# Define UI for application that draws a histogram
+shinyUI(fluidPage(
+
+    # Application title
+    titlePanel("Three aspects of automobile design and performance"),
+
+    # Sidebar with a slider input for number of ...
+    sidebarLayout(
+        sidebarPanel(
+            sliderInput("cyl",
+                        "Number of cylinders:",
+                        min = 4,
+                        max = 8,
+                        value = -c(5,7)),
+            sliderInput("hp",
+                        "Gross horsepower:",
+                        min = 52,
+                        max = 335,
+                        value = c(100,193)),
+            sliderInput("wt",
+                        "Weight (1000 lbs):",
+                        min = 1.513,
+                        max = 5.424,
+                        value = c(2,3.47)),
+        ),
+
+        # Show a plot of the generated distribution
+        mainPanel(
+            h3("Miles/(US) gallon:"),
+            plotOutput("plot")
+        )
+    )
+))
+```
+
+## Slide with server.R code
+
+```{r, echo = TRUE, eval=FALSE}
+library(shiny)
+library(dplyr)
+
+# Define server logic required to draw a histogram
+shinyServer(function(input, output) {
+  output$plot <- renderPlot({
+    min_cyl <- input$cyl[1]
+    max_cyl <- input$cyl[2]
+    min_hp <- input$hp[1]
+    max_hp <- input$hp[2]
+    min_wt <- input$wt[1]
+    max_wt <- input$wt[2]
+    
+    x <- filter(mtcars, mtcars$cyl>=min_cyl) 
+    x <- filter(x, x$cyl<=max_cyl) 
+    x <- filter(x, x$hp>=min_hp) 
+    x <- filter(x, x$hp<=max_hp) 
+    x <- filter(x, x$wt>=min_wt) 
+    x <- filter(x, x$wt<=max_wt)
+    mpg <- x[,1]
+    #  cyl <- seq(min(x), max(x), length.out = input$cyl + 1)
+    
+    # draw the histogram with the specified number of bins
+    hist(mpg, breaks = 10, col = 'darkgray', border = 'white',
+         xlab = 'mpg',
+         main = 'Histogram of Miles/(US) gallon')
+    
+  })
+  
+})
+```
+
+## Example of Output Histogram
+
+```{r, echo = TRUE, eval=TRUE}
+  hist(mtcars$mpg, breaks = 10, col = 'darkgray', border = 'white',
+         xlab = 'mpg',
+         main = 'Histogram of Miles/(US) gallon')
+```
