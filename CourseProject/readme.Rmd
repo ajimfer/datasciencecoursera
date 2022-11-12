@@ -1,0 +1,7 @@
+How to use courseproject App:
+
+This App shows an histogram with the frecuency of cars with a determined miles per galon performance using mtcars dataframe and selecting a range of cylinder numbers, horsepower and weigth of the cars.
+
+Select ranges using the sliders.
+
+Results will be shown on the right.
